@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Survey Methodology Interactive Quiz</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --card-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --correct: #22c55e;
+      --wrong: #ef4444;
+      --border: #334155;
+      --shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: linear-gradient(135deg, #020617 0%, #0f172a 60%, #111827 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+    }
+
+    .card {
+      background: rgba(17, 24, 39, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 28px;
+      backdrop-filter: blur(10px);
+    }
+
+    .hidden { display: none; }
+
+    h1, h2, h3, p { margin-top: 0; }
+
+    .eyebrow {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 12px;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .title {
+      font-size: clamp(28px, 4vw, 42px);
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin: 22px 0 28px;
+    }
+
+    .meta-box {
+      background: var(--card-2);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .meta-box .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .meta-box .value {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease, background 0.2s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { cursor: not-allowed; opacity: 0.6; transform: none; }
+
+    .primary {
+      background: var(--accent);
+      color: #082f49;
+    }
+
+    .secondary {
+      background: #334155;
+      color: #f8fafc;
+    }
+
+    .quiz-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .question-text {
+      font-size: clamp(22px, 3vw, 30px);
+      line-height: 1.35;
+      margin-bottom: 22px;
+    }
+
+    .lecture-tag {
+      display: inline-block;
+      margin-bottom: 14px;
+      color: #7dd3fc;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .options {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .option {
+      width: 100%;
+      text-align: left;
+      background: #0b1220;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 18px;
+      border-radius: 18px;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .option:hover { background: #131c2d; }
+    .option.correct {
+      border-color: rgba(34, 197, 94, 0.75);
+      background: rgba(34, 197, 94, 0.15);
+    }
+    .option.wrong {
+      border-color: rgba(239, 68, 68, 0.75);
+      background: rgba(239, 68, 68, 0.15);
+    }
+    .option.dim {
+      opacity: 0.7;
+    }
+
+    .feedback {
+      border-radius: 20px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      background: #0b1220;
+      margin-bottom: 18px;
+    }
+
+    .feedback.correct {
+      border-color: rgba(34, 197, 94, 0.6);
+      background: rgba(34, 197, 94, 0.12);
+    }
+
+    .feedback.wrong {
+      border-color: rgba(239, 68, 68, 0.6);
+      background: rgba(239, 68, 68, 0.12);
+    }
+
+    .feedback h3 {
+      margin-bottom: 10px;
+    }
+
+    .feedback p {
+      margin-bottom: 10px;
+      line-height: 1.65;
+      color: #dbeafe;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .progress-wrap {
+      margin: 16px 0 28px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #0b1220;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+      transition: width 0.3s ease;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin: 24px 0 28px;
+    }
+
+    .results-grid .box {
+      background: #0b1220;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .results-grid .num {
+      font-size: 30px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .results-grid .small {
+      color: var(--muted);
+    }
+
+    .review-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .review-item {
+      border: 1px solid var(--border);
+      background: #0b1220;
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .review-item.correct { border-left: 5px solid var(--correct); }
+    .review-item.wrong { border-left: 5px solid var(--wrong); }
+
+    .review-item p {
+      color: #cbd5e1;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    @media (max-width: 640px) {
+      .card { padding: 20px; }
+      .actions button { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section id="start-screen" class="card">
+      <div class="eyebrow">Interactive Quiz</div>
+      <h1 class="title">Survey Methodology MCQ Bank</h1>
+      <p class="subtitle">A one-question-per-page quiz covering Lectures 1 to 5. Pick an answer, reveal the correct answer instantly, read the explanation, then move to the next question.</p>
+
+      <div class="meta">
+        <div class="meta-box">
+          <div class="label">Course</div>
+          <div class="value">Introduction to Survey Methodology</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Instructor</div>
+          <div class="value">Dr. Mohamed Moustafa</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Questions</div>
+          <div class="value">45 MCQs</div>
+        </div>
+        <div class="meta-box">
+          <div class="label">Format</div>
+          <div class="value">Interactive + Explained</div>
+        </div>
+      </div>
+
+      <button id="start-btn" class="primary">Start Quiz</button>
+    </section>
+
+    <section id="quiz-screen" class="card hidden">
+      <div class="quiz-top">
+        <div>
+          <div id="lecture-tag" class="lecture-tag"></div>
+          <div id="question-counter" class="pill"></div>
+        </div>
+        <div id="score-pill" class="pill"></div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+      </div>
+
+      <h2 id="question-text" class="question-text"></h2>
+      <div id="options" class="options"></div>
+      <div id="feedback"></div>
+
+      <div class="actions">
+        <button id="restart-btn" class="secondary">Restart</button>
+        <button id="next-btn" class="primary" disabled>Next Question</button>
+      </div>
+    </section>
+
+    <section id="results-screen" class="card hidden">
+      <div class="eyebrow">Finished</div>
+      <h2 class="title">Quiz Complete</h2>
+      <p class="subtitle">You made it through all 45 questions. Here is your scorecard and a compact review trail.</p>
+
+      <div class="results-grid">
+        <div class="box">
+          <div id="final-score" class="num">0</div>
+          <div class="small">Correct Answers</div>
+        </div>
+        <div class="box">
+          <div id="final-percent" class="num">0%</div>
+          <div class="small">Score</div>
+        </div>
+        <div class="box">
+          <div id="final-total" class="num">45</div>
+          <div class="small">Total Questions</div>
+        </div>
+      </div>
+
+      <button id="retry-btn" class="primary">Try Again</button>
+
+      <div id="review-list" class="review-list"></div>
+    </section>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        lecture: 'Lecture 1 – Introduction to Survey Methodology',
+        question: 'What is the primary purpose of a survey?',
+        options: [
+          'To manipulate participants into specific responses',
+          'To collect information from a group of people to gather insights on opinions, behaviors, or characteristics',
+          'To conduct experiments with controlled variables',
+          'To observe individuals without their knowledge'
+        ],
+        correct: 1,
+        explanation: 'A survey is defined as a method of collecting information from a group of people to gather insights on opinions, behaviors, or characteristics.'
+      },
+      {
+        lecture: 'Lecture 1 – Introduction to Survey Methodology',
+        question: 'Which of the following is NOT listed as a reason why surveys are important?',
+        options: [
+          'They help collect large-scale data efficiently',
+          'They support decision-making in business and government',
+          'They are used in predictive analytics and machine learning models',
+          'They replace the need for direct experimentation entirely'
+        ],
+        correct: 3,
+        explanation: 'Surveys are important for efficient data collection, decision-making support, and predictive analytics, but they do not replace direct experimentation.'
+      },
+      {
+        lecture: 'Lecture 1 – Introduction to Survey Methodology',
+        question: 'In survey terminology, what is a sample?',
+        options: [
+          'The entire group being studied',
+          'A subset of the population used for data collection',
+          'The set of questions in the survey',
+          'The results obtained after the survey'
+        ],
+        correct: 1,
+        explanation: 'A sample is a subset of the population used for data collection.'
+      },
+      {
+        lecture: 'Lecture 1 – Introduction to Survey Methodology',
+        question: 'Which interview question type allows interviewees to respond as they wish and to any length?',
+        options: [
+          'Closed questions',
+          'Bipolar questions',
+          'Open-ended questions',
+          'Probing questions'
+        ],
+        correct: 2,
+        explanation: 'Open-ended questions allow interviewees to respond however they wish and at any length, which is useful when depth and breadth are needed.'
+      },
+      {
+        lecture: 'Lecture 1 – Introduction to Survey Methodology',
+        question: 'Which of the following is a disadvantage of open-ended interview questions?',
+        options: [
+          'They provide richness of detail',
+          'They may result in too much irrelevant detail',
+          'They put the interviewee at ease',
+          'They allow more spontaneity'
+        ],
+        correct: 1,
+        explanation: 'A major drawback of open-ended questions is that they may generate too much irrelevant information, which can make interviews difficult to manage.'
+      },
+      {
+        lecture: 'Lecture 1 – Introduction to Survey Methodology',
+        question: 'Bipolar questions are best described as questions that:',
+        options: [
+          'Ask two questions at the same time',
+          'Are answered with yes/no or agree/disagree',
+          'Begin with broad topics and narrow down',
+          'Elicit more detail about a previous question'
+        ],
+        correct: 1,
+        explanation: 'Bipolar questions limit responses to two options, such as yes/no or agree/disagree, and should be used sparingly.'
+      },
+      {
+        lecture: 'Lecture 1 – Introduction to Survey Methodology',
+        question: 'Which interview sequencing structure starts with broad, open-ended questions and gradually narrows to closed questions?',
+        options: [
+          'Pyramid Structure',
+          'Diamond Structure',
+          'Funnel Structure',
+          'Inverted Pyramid'
+        ],
+        correct: 2,
+        explanation: 'The Funnel Structure begins with generalized open-ended questions and then narrows toward more closed and specific questions.'
+      },
+      {
+        lecture: 'Lecture 1 – Introduction to Survey Methodology',
+        question: 'Apple’s 2018 survey asked “How much do you love your iPhone?” This is an example of:',
+        options: [
+          'A probing question',
+          'A leading question',
+          'A bipolar question',
+          'An open-ended question'
+        ],
+        correct: 1,
+        explanation: 'This is a leading question because it assumes the respondent already loves their iPhone and nudges them toward a positive response.'
+      },
+      {
+        lecture: 'Lecture 1 – Introduction to Survey Methodology',
+        question: 'What are questionnaires primarily useful for gathering information about?',
+        options: [
+          'Attitudes, beliefs, behaviors, and characteristics',
+          'Financial data and market prices',
+          'Genetic information and medical records',
+          'Historical events and archival records'
+        ],
+        correct: 0,
+        explanation: 'Questionnaires are primarily used to gather information about attitudes, beliefs, behaviors, and characteristics.'
+      },
+      {
+        lecture: 'Lecture 1 – Introduction to Survey Methodology',
+        question: 'In a fixed format questionnaire, respondents:',
+        options: [
+          'Write any answer they choose in a blank space',
+          'Must choose from predefined response options',
+          'Are interviewed face-to-face',
+          'Participate anonymously online only'
+        ],
+        correct: 1,
+        explanation: 'Fixed format questionnaires require respondents to choose from predefined response options, which makes data easier to compare and analyze.'
+      },
+      {
+        lecture: 'Lecture 2 – Surveys Based on Time Frame',
+        question: 'A cross-sectional survey is best described as:',
+        options: [
+          'A survey that follows the same individuals over many years',
+          'A survey that collects data from a population at a single point in time',
+          'A survey that randomly assigns participants to control groups',
+          'A survey that manipulates one variable to observe its effect'
+        ],
+        correct: 1,
+        explanation: 'A cross-sectional survey gathers data from a population at one point in time, providing a snapshot rather than showing change over time.'
+      },
+      {
+        lecture: 'Lecture 2 – Surveys Based on Time Frame',
+        question: 'Which of the following is an advantage of cross-sectional surveys?',
+        options: [
+          'They can establish cause-and-effect relationships',
+          'They track behavioral changes over time',
+          'They are efficient and time-saving',
+          'They eliminate the risk of response bias'
+        ],
+        correct: 2,
+        explanation: 'Cross-sectional surveys are efficient and time-saving because all data is collected at a single point rather than across a long period.'
+      },
+      {
+        lecture: 'Lecture 2 – Surveys Based on Time Frame',
+        question: 'A longitudinal survey differs from a cross-sectional survey primarily because it:',
+        options: [
+          'Uses random assignment of participants',
+          'Collects data from the same individuals over an extended period',
+          'Only measures opinions, not behaviors',
+          'Requires a smaller sample size'
+        ],
+        correct: 1,
+        explanation: 'Longitudinal surveys collect data from the same individuals or groups over time so changes and trends can be studied.'
+      },
+      {
+        lecture: 'Lecture 2 – Surveys Based on Time Frame',
+        question: 'Which type of longitudinal study tracks the career paths of graduates from the class of 2024?',
+        options: [
+          'Trend Study',
+          'Panel Survey',
+          'Cohort Study',
+          'Cross-Sectional Survey'
+        ],
+        correct: 2,
+        explanation: 'A cohort study follows a group sharing a common characteristic, such as belonging to the graduating class of 2024.'
+      },
+      {
+        lecture: 'Lecture 2 – Surveys Based on Time Frame',
+        question: '“Participant Dropout” is a major limitation of which survey type?',
+        options: [
+          'Cross-Sectional Surveys',
+          'Experimental Surveys',
+          'Longitudinal Surveys',
+          'Descriptive Surveys'
+        ],
+        correct: 2,
+        explanation: 'Longitudinal surveys follow participants over time, so dropout is a major issue that can weaken data quality.'
+      },
+      {
+        lecture: 'Lecture 2 – Surveys Based on Time Frame',
+        question: 'A panel survey is a type of longitudinal survey where:',
+        options: [
+          'Different participants are selected each wave',
+          'The same group of individuals is surveyed multiple times over a period',
+          'Participants are assigned to experimental and control groups',
+          'Data is collected only once, at the start of the research'
+        ],
+        correct: 1,
+        explanation: 'A panel survey repeatedly surveys the same group of individuals across multiple waves to observe change.'
+      },
+      {
+        lecture: 'Lecture 2 – Surveys Based on Time Frame',
+        question: 'A trend study measuring public trust in government every five years is an example of:',
+        options: [
+          'A cross-sectional survey',
+          'A panel survey',
+          'A trend study (longitudinal)',
+          'An experimental survey'
+        ],
+        correct: 2,
+        explanation: 'A trend study measures the same variable in a population at regular intervals, even if the exact individuals differ each time.'
+      },
+      {
+        lecture: 'Lecture 2 – Surveys Based on Time Frame',
+        question: 'Which of the following is NOT a limitation of panel surveys?',
+        options: [
+          'They are time-consuming',
+          'They risk panel dropout',
+          'They cannot track individual-level changes',
+          'They carry a bias risk'
+        ],
+        correct: 2,
+        explanation: 'Tracking individual-level changes is actually one of the main advantages of panel surveys, not a limitation.'
+      },
+      {
+        lecture: 'Lecture 3 – Sampling Strategies',
+        question: 'What is sampling in research?',
+        options: [
+          'Studying every individual in the entire population',
+          'Selecting a subset of a population to collect data from',
+          'Manipulating variables to test hypotheses',
+          'Conducting interviews with random participants'
+        ],
+        correct: 1,
+        explanation: 'Sampling means selecting a subset of the population instead of studying the entire population.'
+      },
+      {
+        lecture: 'Lecture 3 – Sampling Strategies',
+        question: 'In Simple Random Sampling (SRS), how are individuals selected?',
+        options: [
+          'Based on the researcher’s judgment',
+          'By dividing the population into clusters',
+          'By assigning numbers and using a random number generator',
+          'By asking participants to recruit others'
+        ],
+        correct: 2,
+        explanation: 'In simple random sampling, each member is assigned a number and a random process selects participants so everyone has an equal chance.'
+      },
+      {
+        lecture: 'Lecture 3 – Sampling Strategies',
+        question: 'A health researcher who wants opinions only from diabetic patients is using:',
+        options: [
+          'Simple Random Sampling',
+          'Stratified Sampling',
+          'Snowball Sampling',
+          'Purposive Sampling'
+        ],
+        correct: 3,
+        explanation: 'Purposive sampling selects participants based on specific characteristics that are directly relevant to the study.'
+      },
+      {
+        lecture: 'Lecture 3 – Sampling Strategies',
+        question: 'Snowball sampling is most useful when:',
+        options: [
+          'The population is very large and well-documented',
+          'The researcher needs maximum statistical accuracy',
+          'The target population is hard to reach',
+          'The budget is unlimited'
+        ],
+        correct: 2,
+        explanation: 'Snowball sampling is especially useful for hard-to-reach populations because participants help recruit others from their networks.'
+      },
+      {
+        lecture: 'Lecture 3 – Sampling Strategies',
+        question: 'Which factor, when increased, reduces the margin of error in survey results?',
+        options: [
+          'Confidence level',
+          'Sample size',
+          'Population size',
+          'Standard deviation'
+        ],
+        correct: 1,
+        explanation: 'Increasing sample size reduces sampling error, which lowers the margin of error and improves accuracy.'
+      },
+      {
+        lecture: 'Lecture 3 – Sampling Strategies',
+        question: 'Using the standard sample size formula with a 95% confidence level, p = 0.5, and a 5% margin of error, what is the required sample size?',
+        options: [
+          '196',
+          '322',
+          '384',
+          '500'
+        ],
+        correct: 2,
+        explanation: 'Using n = (1.96)^2 × 0.5 × 0.5 / (0.05)^2 gives approximately 384.'
+      },
+      {
+        lecture: 'Lecture 3 – Sampling Strategies',
+        question: 'When adjusting for a small population of 2,000 students from an initial n = 384, the adjusted sample size is approximately:',
+        options: [
+          '384',
+          '350',
+          '322',
+          '250'
+        ],
+        correct: 2,
+        explanation: 'Applying the small population correction gives an adjusted sample size of about 322.'
+      },
+      {
+        lecture: 'Lecture 3 – Sampling Strategies',
+        question: 'Stratified sampling differs from cluster sampling because in stratified sampling:',
+        options: [
+          'Entire clusters are chosen and all their members are surveyed',
+          'The population is divided into subgroups and a random sample is taken from each subgroup',
+          'Participants are selected based on ease of access',
+          'Selection is not random'
+        ],
+        correct: 1,
+        explanation: 'In stratified sampling, the population is divided into subgroups and a random sample is taken from each. Cluster sampling instead selects whole clusters.'
+      },
+      {
+        lecture: 'Lecture 3 – Sampling Strategies',
+        question: 'Why is probability sampling considered more accurate than non-probability sampling?',
+        options: [
+          'It is cheaper and faster',
+          'It allows the researcher to choose the best participants',
+          'Random selection reduces bias and allows for statistical inference',
+          'It requires fewer resources'
+        ],
+        correct: 2,
+        explanation: 'Probability sampling relies on random selection, which reduces bias and supports statistical inference and generalization.'
+      },
+      {
+        lecture: 'Lecture 4 – Experimental vs. Non-Experimental Surveys & Ethics',
+        question: 'What distinguishes an experimental survey from a non-experimental survey?',
+        options: [
+          'Experimental surveys collect qualitative data only',
+          'Experimental surveys test cause-and-effect by manipulating one or more variables',
+          'Experimental surveys are always conducted online',
+          'Experimental surveys use the same participants over time'
+        ],
+        correct: 1,
+        explanation: 'Experimental surveys manipulate one or more variables while keeping other conditions controlled to test cause-and-effect relationships.'
+      },
+      {
+        lecture: 'Lecture 4 – Experimental vs. Non-Experimental Surveys & Ethics',
+        question: 'A company tests two different email subject lines to see which gets more clicks. This is an example of:',
+        options: [
+          'A Factorial Survey',
+          'A Randomized Controlled Survey',
+          'An A/B Testing Survey',
+          'A Descriptive Survey'
+        ],
+        correct: 2,
+        explanation: 'A/B testing compares two versions shown to different groups to see which produces better outcomes.'
+      },
+      {
+        lecture: 'Lecture 4 – Experimental vs. Non-Experimental Surveys & Ethics',
+        question: 'A non-experimental survey is characterized by:',
+        options: [
+          'Random assignment of participants to control and experimental groups',
+          'Manipulation of independent variables',
+          'No manipulation of variables; used to describe trends and opinions',
+          'Use of control groups to isolate effects'
+        ],
+        correct: 2,
+        explanation: 'Non-experimental surveys do not manipulate variables. They are used to describe opinions, trends, and behaviors.'
+      },
+      {
+        lecture: 'Lecture 4 – Experimental vs. Non-Experimental Surveys & Ethics',
+        question: 'Which type of survey studies the link between screen time and sleep patterns in teenagers without changing any conditions?',
+        options: [
+          'Experimental Survey',
+          'Correlational Survey',
+          'A/B Testing Survey',
+          'Factorial Survey'
+        ],
+        correct: 1,
+        explanation: 'A correlational survey examines relationships between variables without manipulating them.'
+      },
+      {
+        lecture: 'Lecture 4 – Experimental vs. Non-Experimental Surveys & Ethics',
+        question: 'Informed consent in survey research requires that participants:',
+        options: [
+          'Are unaware of the survey’s true purpose',
+          'Agree to participate with full knowledge of the survey’s purpose',
+          'Are paid for their participation',
+          'Complete the survey without the option to withdraw'
+        ],
+        correct: 1,
+        explanation: 'Informed consent means participants agree to participate while understanding the purpose, risks, data usage, and their right to withdraw.'
+      },
+      {
+        lecture: 'Lecture 4 – Experimental vs. Non-Experimental Surveys & Ethics',
+        question: 'In the Facebook 2014 research controversy, what ethical guideline was violated?',
+        options: [
+          'Confidentiality of results',
+          'Informed consent, because users were not told their feeds were being manipulated',
+          'Using too large a sample size',
+          'Asking leading questions'
+        ],
+        correct: 1,
+        explanation: 'The controversy involved manipulating users’ news feeds without informing them, which violated informed consent.'
+      },
+      {
+        lecture: 'Lecture 4 – Experimental vs. Non-Experimental Surveys & Ethics',
+        question: 'What is the difference between confidentiality and anonymity in survey research?',
+        options: [
+          'They mean the same thing',
+          'Confidentiality means data is private but linked to individuals; anonymity means no identifiable information is collected',
+          'Anonymity means data is shared publicly; confidentiality means data is deleted',
+          'Confidentiality applies only to medical research'
+        ],
+        correct: 1,
+        explanation: 'Confidentiality keeps personal data private even if it can be linked to individuals, while anonymity means no personally identifiable information is collected at all.'
+      },
+      {
+        lecture: 'Lecture 4 – Experimental vs. Non-Experimental Surveys & Ethics',
+        question: 'A consent form should include which of the following elements?',
+        options: [
+          'Purpose of study, data usage, confidentiality, risks and benefits, and voluntary participation',
+          'Only the researcher’s contact details',
+          'The participant’s financial compensation only',
+          'Instructions on how to use the survey platform'
+        ],
+        correct: 0,
+        explanation: 'A proper consent form should explain the study purpose, data usage, privacy protections, risks and benefits, and the voluntary nature of participation.'
+      },
+      {
+        lecture: 'Lecture 5 – Pilot Testing & Validity',
+        question: 'What is a pilot test?',
+        options: [
+          'The final, large-scale version of a survey',
+          'A small-scale version of a full survey conducted with a limited sample to evaluate performance before launch',
+          'A statistical method to calculate sample size',
+          'A technique for analyzing survey results'
+        ],
+        correct: 1,
+        explanation: 'A pilot test is a small-scale trial run used to identify problems before the full survey is launched.'
+      },
+      {
+        lecture: 'Lecture 5 – Pilot Testing & Validity',
+        question: 'Which of the following is NOT a key activity in pilot testing?',
+        options: [
+          'Administering the survey',
+          'Collecting feedback',
+          'Measuring completion time and dropout rate',
+          'Publishing the final survey results'
+        ],
+        correct: 3,
+        explanation: 'Pilot testing includes administering the survey, collecting feedback, and measuring completion time or dropout. Publishing final results is not part of pilot testing.'
+      },
+      {
+        lecture: 'Lecture 5 – Pilot Testing & Validity',
+        question: 'Reliability in survey research refers to:',
+        options: [
+          'Whether the survey measures what it is supposed to measure',
+          'The consistency or repeatability of survey results',
+          'The percentage of people who completed the survey',
+          'The clarity of survey instructions'
+        ],
+        correct: 1,
+        explanation: 'Reliability refers to consistency. A reliable survey produces similar results under similar conditions.'
+      },
+      {
+        lecture: 'Lecture 5 – Pilot Testing & Validity',
+        question: 'Which type of reliability is concerned with whether two independent raters give the same score?',
+        options: [
+          'Test-Retest Reliability',
+          'Internal Consistency',
+          'Inter-Rater Reliability',
+          'Content Validity'
+        ],
+        correct: 2,
+        explanation: 'Inter-Rater Reliability measures the level of agreement between independent raters or observers.'
+      },
+      {
+        lecture: 'Lecture 5 – Pilot Testing & Validity',
+        question: 'Validity in a survey means:',
+        options: [
+          'The survey is answered consistently over time',
+          'The survey is short and easy to complete',
+          'The survey actually measures what it is supposed to measure',
+          'The survey has a high response rate'
+        ],
+        correct: 2,
+        explanation: 'Validity asks whether the instrument measures the intended concept. A survey can be reliable without being valid.'
+      },
+      {
+        lecture: 'Lecture 5 – Pilot Testing & Validity',
+        question: 'Cognitive testing is used to:',
+        options: [
+          'Measure participants’ intelligence levels',
+          'Evaluate whether people understand survey questions correctly',
+          'Calculate the required sample size',
+          'Determine the best sampling method'
+        ],
+        correct: 1,
+        explanation: 'Cognitive testing checks whether respondents understand and interpret survey questions the way the researcher intended.'
+      },
+      {
+        lecture: 'Lecture 5 – Pilot Testing & Validity',
+        question: 'The Think-Aloud Protocol is a technique used in:',
+        options: [
+          'Stratified sampling',
+          'Cognitive testing',
+          'Calculating margin of error',
+          'Data analysis'
+        ],
+        correct: 1,
+        explanation: 'The Think-Aloud Protocol is part of cognitive testing and asks participants to verbalize their thought process while answering.'
+      },
+      {
+        lecture: 'Lecture 5 – Pilot Testing & Validity',
+        question: 'Nonresponse bias occurs when:',
+        options: [
+          'Too many people complete the survey',
+          'The survey has too many questions',
+          'Important groups are missed due to a low response rate',
+          'Pilot testing is skipped'
+        ],
+        correct: 2,
+        explanation: 'Nonresponse bias happens when nonrespondents differ systematically from respondents, which can skew results.'
+      },
+      {
+        lecture: 'Lecture 5 – Pilot Testing & Validity',
+        question: 'Which of the following is a proven strategy to increase survey response rates?',
+        options: [
+          'Making the survey as long and detailed as possible',
+          'Sending a generic, impersonal invitation',
+          'Offering incentives and personalizing invitations',
+          'Removing all questions about privacy'
+        ],
+        correct: 2,
+        explanation: 'Response rates improve when invitations are personalized, incentives are offered, and the survey is short, clear, and transparent about privacy.'
+      },
+      {
+        lecture: 'Lecture 5 – Pilot Testing & Validity',
+        question: 'Face Validity is best described as:',
+        options: [
+          'Statistical proof that a scale measures the right construct',
+          'Whether the survey looks like it measures what it claims to on the surface',
+          'Consistency of results across different time points',
+          'Agreement between two independent raters'
+        ],
+        correct: 1,
+        explanation: 'Face validity is the most basic form of validity. It asks whether the survey appears, on the surface, to measure what it claims to measure.'
+      }
+    ];
+
+    const startScreen = document.getElementById('start-screen');
+    const quizScreen = document.getElementById('quiz-screen');
+    const resultsScreen = document.getElementById('results-screen');
+    const lectureTag = document.getElementById('lecture-tag');
+    const questionCounter = document.getElementById('question-counter');
+    const scorePill = document.getElementById('score-pill');
+    const questionText = document.getElementById('question-text');
+    const optionsWrap = document.getElementById('options');
+    const feedback = document.getElementById('feedback');
+    const nextBtn = document.getElementById('next-btn');
+    const progressFill = document.getElementById('progress-fill');
+    const finalScore = document.getElementById('final-score');
+    const finalPercent = document.getElementById('final-percent');
+    const finalTotal = document.getElementById('final-total');
+    const reviewList = document.getElementById('review-list');
+
+    let currentIndex = 0;
+    let score = 0;
+    let answered = false;
+    let userAnswers = [];
+
+    function startQuiz() {
+      currentIndex = 0;
+      score = 0;
+      answered = false;
+      userAnswers = [];
+      startScreen.classList.add('hidden');
+      resultsScreen.classList.add('hidden');
+      quizScreen.classList.remove('hidden');
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      answered = false;
+      nextBtn.disabled = true;
+      feedback.innerHTML = '';
+
+      const q = questions[currentIndex];
+      lectureTag.textContent = q.lecture;
+      questionCounter.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+      scorePill.textContent = `Score: ${score}`;
+      questionText.textContent = q.question;
+      progressFill.style.width = `${((currentIndex) / questions.length) * 100}%`;
+
+      optionsWrap.innerHTML = '';
+      q.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'option';
+        btn.innerHTML = `<strong>${String.fromCharCode(65 + idx)})</strong> ${opt}`;
+        btn.addEventListener('click', () => selectAnswer(idx));
+        optionsWrap.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(selectedIndex) {
+      if (answered) return;
+      answered = true;
+
+      const q = questions[currentIndex];
+      const optionButtons = [...document.querySelectorAll('.option')];
+      const isCorrect = selectedIndex === q.correct;
+      if (isCorrect) score += 1;
+
+      userAnswers.push({
+        question: q.question,
+        selectedIndex,
+        correctIndex: q.correct,
+        lecture: q.lecture,
+        explanation: q.explanation,
+        options: q.options,
+        isCorrect
+      });
+
+      optionButtons.forEach((btn, idx) => {
+        btn.disabled = true;
+        if (idx === q.correct) {
+          btn.classList.add('correct');
+        } else if (idx === selectedIndex) {
+          btn.classList.add('wrong');
+        } else {
+          btn.classList.add('dim');
+        }
+      });
+
+      feedback.innerHTML = `
+        <div class="feedback ${isCorrect ? 'correct' : 'wrong'}">
+          <h3>${isCorrect ? 'Correct Answer ✅' : 'Not quite ✍️'}</h3>
+          <p><strong>Correct Option:</strong> ${String.fromCharCode(65 + q.correct)}) ${q.options[q.correct]}</p>
+          <p><strong>Explanation:</strong> ${q.explanation}</p>
+        </div>
+      `;
+
+      scorePill.textContent = `Score: ${score}`;
+      progressFill.style.width = `${((currentIndex + 1) / questions.length) * 100}%`;
+      nextBtn.disabled = false;
+      nextBtn.textContent = currentIndex === questions.length - 1 ? 'See Results' : 'Next Question';
+    }
+
+    function nextQuestion() {
+      if (!answered) return;
+      if (currentIndex < questions.length - 1) {
+        currentIndex += 1;
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      quizScreen.classList.add('hidden');
+      resultsScreen.classList.remove('hidden');
+      finalScore.textContent = score;
+      finalPercent.textContent = `${Math.round((score / questions.length) * 100)}%`;
+      finalTotal.textContent = questions.length;
+
+      reviewList.innerHTML = '<h3>Quick Review</h3>';
+      userAnswers.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = `review-item ${item.isCorrect ? 'correct' : 'wrong'}`;
+        div.innerHTML = `
+          <p><strong>Q${index + 1}:</strong> ${item.question}</p>
+          <p><strong>Your answer:</strong> ${String.fromCharCode(65 + item.selectedIndex)}) ${item.options[item.selectedIndex]}</p>
+          <p><strong>Correct answer:</strong> ${String.fromCharCode(65 + item.correctIndex)}) ${item.options[item.correctIndex]}</p>
+          <p><strong>Explanation:</strong> ${item.explanation}</p>
+        `;
+        reviewList.appendChild(div);
+      });
+    }
+
+    document.getElementById('start-btn').addEventListener('click', startQuiz);
+    document.getElementById('retry-btn').addEventListener('click', startQuiz);
+    document.getElementById('restart-btn').addEventListener('click', startQuiz);
+    nextBtn.addEventListener('click', nextQuestion);
+  </script>
+</body>
+</html>
